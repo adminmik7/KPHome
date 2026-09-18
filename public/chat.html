@@ -950,8 +950,8 @@ body {
 
 <script>
 
-const API_BASE = 'http://192.168.1.119';
-const WS_URL = 'ws://192.168.1.119';
+const API_BASE = window.location.origin;
+const WS_URL = window.location.origin.replace(/^http/, 'ws');
 let BOT_API_URL = ''; // загружается из endpoint.json
 
 const AVATAR_COLORS = [

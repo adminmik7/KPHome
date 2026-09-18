@@ -296,12 +296,12 @@ body:not(.authed) .auth-screen.show-on-load{display:flex}
 </div>
 
 <script>
-const API_URL = 'http://192.168.1.119';
+const API_URL = window.location.origin;
 (function(){
   'use strict';
 
   
-  var WS_URL = 'ws://192.168.1.119';
+  var WS_URL = window.location.origin.replace(/^http/, 'ws');
   var REFRESH_INTERVAL_MS = 300000; // Auto-refresh every 5 minutes
   var RECONNECT_DELAY_MS = 500;
   var POST_MESSAGE_ORIGIN = '*'; 

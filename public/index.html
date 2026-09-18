@@ -2755,7 +2755,7 @@
 </div>
 
 <script>
-    const API_URL = 'http://192.168.1.119';
+    const API_URL = window.location.origin;
     document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
     document.addEventListener('dragstart', function(e) { if (e.target.tagName === 'IMG') e.preventDefault(); });
     document.addEventListener('selectstart', function(e) { if (e.target.nodeType === 1 && !e.target.closest('.selectable')) e.preventDefault(); });
