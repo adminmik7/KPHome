@@ -19,6 +19,13 @@ function localNow() {
 }
 
 app.use(express.json());
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    if (req.method === 'OPTIONS') return res.sendStatus(200);
+    next();
+});
 app.get('/index.html', (req, res) => {
     res.set('Cache-Control', 'no-cache');
     res.sendFile(path.join(__dirname, 'public', 'index.html'));

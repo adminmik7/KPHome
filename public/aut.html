@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web-form KP &middot; Settings</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" href="/img/favicon.svg">
+    <link rel="icon" href="img/favicon.svg">
     <style>
         :root {
             --bg-page: #f9fafb;
@@ -766,10 +766,8 @@
     </div>
 
     <script>
+        const API_URL = 'http://192.168.1.119';
 
-        if (window.location.pathname.endsWith('/aut.html')) {
-            history.replaceState(null, '', '/settings');
-        }
 
         (function() {
             if (localStorage.getItem('gen_cp_authenticated') !== 'true') {
@@ -937,7 +935,7 @@
 
         async function loadUsers() {
             try {
-                const res = await fetch('/api/users');
+                const res = await fetch(API_URL + '/api/users');
                 if (!res.ok) throw new Error('Ошибка загрузки');
                 const data = await res.json();
                 users = data.users.map(u => ({ ...u, role: u.role || 'user' }));
@@ -1024,7 +1022,7 @@
             try {
                 btn.disabled = true;
                 btn.innerHTML = '<div class="spinner"></div> Сохранение...';
-                const res = await fetch('/api/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ users }) });
+                const res = await fetch(API_URL + '/api/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ users }) });
                 if (res.ok) showToast('Изменения сохранены в db.json', 'success');
                 else throw new Error('Ошибка сервера');
             } catch (err) { showToast('Не удалось сохранить', 'error'); }
@@ -1229,7 +1227,7 @@
 
         async function loadConditions() {
             try {
-                const res = await fetch('/api/env');
+                const res = await fetch(API_URL + '/api/env');
                 if (!res.ok) throw new Error('Ошибка загрузки');
                 const data = await res.json();
                 envConditions = data.conditions || {};
@@ -1242,7 +1240,7 @@
             try {
                 btn.disabled = true;
                 btn.innerHTML = '<div class="spinner"></div> Сохранение...';
-                const res = await fetch('/api/env', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conditions: envConditions }) });
+                const res = await fetch(API_URL + '/api/env', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conditions: envConditions }) });
                 if (res.ok) showToast('Условия сохранены', 'success');
                 else throw new Error('Ошибка сервера');
             } catch (err) { showToast('Не удалось сохранить условия', 'error'); }
@@ -1268,7 +1266,7 @@
                 envConditions[key].splice(index, 1);
                 renderConditions();
                 showToast('Условие удалено', 'info');
-                try { await fetch('/api/env', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conditions: envConditions }) }); }
+                try { await fetch(API_URL + '/api/env', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conditions: envConditions }) }); }
                 catch (err) { showToast('Ошибка при сохранении', 'error'); }
             }
             deleteConfirmModal.classList.remove('show');

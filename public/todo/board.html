@@ -296,12 +296,12 @@ body:not(.authed) .auth-screen.show-on-load{display:flex}
 </div>
 
 <script>
-history.replaceState(null, '', '/');
+const API_URL = 'http://192.168.1.119';
 (function(){
   'use strict';
 
   
-  var WS_URL = 'ws://' + location.host;
+  var WS_URL = 'ws://192.168.1.119';
   var REFRESH_INTERVAL_MS = 300000; // Auto-refresh every 5 minutes
   var RECONNECT_DELAY_MS = 500;
   var POST_MESSAGE_ORIGIN = '*'; 
@@ -490,7 +490,7 @@ history.replaceState(null, '', '/');
         refreshIntervalTimer = setInterval(loadTasks, REFRESH_INTERVAL_MS);
 
         
-        apiFetch('/api/users').then(function(data) {
+        apiFetch(API_URL + '/api/users').then(function(data) {
           users = data.users || [];
           populateExecutors();
           loadTasks(function() {
@@ -631,7 +631,7 @@ history.replaceState(null, '', '/');
   
 
   function loadTasks(cb) {
-    apiFetch('/api/tasks?login=' + encodeURIComponent(currentUser))
+    apiFetch(API_URL + '/api/tasks?login=' + encodeURIComponent(currentUser))
       .then(function(data) {
         if (data.success) {
           tasks = data.tasks || [];
@@ -916,7 +916,7 @@ history.replaceState(null, '', '/');
       var oldTask = tasks.find(function(t){ return t.id === editingTaskId; });
       var statusChanged = oldTask && oldTask.status !== status;
 
-      apiFetch('/api/tasks/' + editingTaskId, {
+      apiFetch(API_URL + '/api/tasks/' + editingTaskId, {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
@@ -951,7 +951,7 @@ history.replaceState(null, '', '/');
         body.executor = [currentUser];
       }
 
-      apiFetch('/api/tasks', {
+      apiFetch(API_URL + '/api/tasks', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(body)
@@ -978,7 +978,7 @@ history.replaceState(null, '', '/');
   function executeDelete() {
     if (!pendingDeleteId) return;
 
-    apiFetch('/api/tasks/' + pendingDeleteId, {method: 'DELETE'})
+    apiFetch(API_URL + '/api/tasks/' + pendingDeleteId, {method: 'DELETE'})
       .then(function() {
         showToast('Задача удалена', 'success');
         setTimeout(broadcastUpdate, 200);

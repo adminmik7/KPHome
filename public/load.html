@@ -543,6 +543,7 @@
 </div>
 
 <script>
+const API_URL = 'http://192.168.1.119';
 
     function sendMessage(action, data) {
         window.parent.postMessage({ action, data }, '*');
@@ -584,10 +585,10 @@
                     </div>
                     <div class="file-actions" style="display: none;">
                         <button class="btn-preview-file" onclick="event.stopPropagation(); previewFile('${escapeHtml(file.name)}')" title="Просмотр">
-                            <img src="/img/btn/view.svg" alt="" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;"> Просмотр
+                            <img src="img/btn/view.svg" alt="" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;"> Просмотр
                         </button>
                         <button class="btn-load-file" onclick="event.stopPropagation(); loadFile('${escapeHtml(file.name)}')" title="Загрузить в форму">
-                            <img src="/img/btn/down.svg" alt="" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;"> Загрузить
+                            <img src="img/btn/down.svg" alt="" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;"> Загрузить
                         </button>
                     </div>
                 `;
@@ -698,7 +699,7 @@
     let activeFile = null;
 
     function loadFile(filename) {
-        fetch(`/api/files/${encodeURIComponent(filename)}`)
+        fetch(`${API_URL}/api/files/${encodeURIComponent(filename)}`)
             .then(r => r.json())
             .then(data => {
                 if (!data.success) {
@@ -733,8 +734,8 @@
                     <p>Рекомендуем связаться с автором для согласования.</p>
                     <p>Загрузить файл?</p>
                     <div style="display:flex;gap:12px;margin-top:16px;justify-content:flex-end;">
-                        <button class="modal-btn cancel" id="loadModalCancel"><img src="/img/btn/cancel.svg" alt="" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"> Отмена</button>
-                        <button class="modal-btn confirm" id="loadModalConfirm"><img src="/img/btn/ok.svg" alt="" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"> Загрузить</button>
+                        <button class="modal-btn cancel" id="loadModalCancel"><img src="img/btn/cancel.svg" alt="" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"> Отмена</button>
+                        <button class="modal-btn confirm" id="loadModalConfirm"><img src="img/btn/ok.svg" alt="" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"> Загрузить</button>
                     </div>
                 </div>
             </div>
@@ -753,7 +754,7 @@
     }
 
     function previewFile(filename) {
-        fetch(`/api/files/${encodeURIComponent(filename)}`)
+        fetch(`${API_URL}/api/files/${encodeURIComponent(filename)}`)
             .then(r => r.json())
             .then(data => {
                 if (!data.success) throw new Error(data.error);
@@ -1065,7 +1066,7 @@
         if (fileData && fileData.success) {
             files = fileData.files || [];
         } else {
-            fetch('/api/files')
+            fetch(API_URL + '/api/files')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
