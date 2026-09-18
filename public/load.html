@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Загрузка файлов</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 20px;
+            background: var(--bg-tertiary, #f1f5f9);
+            color: var(--text-primary, #0f172a);
+            font-size: 10pt;
+            min-height: 100%;
+        }
+
+        .file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--bg-secondary, #ffffff);
+            border: 1px solid var(--border-light, #e2e8f0);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .file-item:hover {
+            border-color: var(--border-dark, #94a3b8);
+        }
+        .file-item.active {
+            border-color: var(--accent-gradient-start, #7c3aed);
+            background: var(--bg-tertiary, #f1f5f9);
+        }
+
+        .file-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .file-name {
+            font-weight: 600;
+            color: var(--text-primary, #0f172a);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .file-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted, #64748b);
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: nowrap;
+            white-space: nowrap;
+            min-width: 0;
+            overflow: hidden;
+        }
+        .file-meta > span {
+            flex-shrink: 0;
+        }
+        .file-meta > span:last-child {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .file-actions button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .btn-load-file {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+        }
+        .btn-load-file:hover {
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        }
+        .btn-preview-file {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+        .btn-preview-file:hover {
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .btn-delete-file {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+          .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted, #64748b);
+        }
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            color: var(--text-muted, #64748b);
+            margin-bottom: 12px;
+        }
+        .empty-state p {
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .loading {
+            display: none;
+        }
+
+        .skeleton-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--bg-secondary, #ffffff);
+            border: 1px solid var(--border-light, #e2e8f0);
+            border-radius: 8px;
+        }
+        .skeleton-item + .skeleton-item { margin-top: 8px; }
+        .skeleton-info { flex: 1; min-width: 0; }
+        .skeleton-line {
+            height: 14px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--bg-tertiary, #f1f5f9) 25%, #e2e8f0 37%, var(--bg-tertiary, #f1f5f9) 63%);
+            background-size: 400% 100%;
+            animation: skeleton-shimmer 1.4s ease infinite;
+        }
+        .skeleton-line.title { width: 40%; height: 16px; margin-bottom: 8px; }
+        .skeleton-line.meta { width: 70%; height: 12px; }
+        @keyframes skeleton-shimmer {
+            0% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .preview-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+        }
+        .preview-modal-content {
+            background: var(--bg-secondary, #ffffff);
+            border-radius: 6px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .preview-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-light, #e2e8f0);
+        }
+        .preview-modal-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: var(--text-primary, #0f172a);
+        }
+        .preview-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted, #64748b);
+            cursor: pointer;
+        }
+        .preview-modal-body {
+            font-size: 0.82rem;
+            line-height: 1.4;
+            color: var(--text-secondary, #374151);
+        }
+        .preview-modal-body pre {
+            background: var(--bg-tertiary, #f1f5f9);
+            padding: 8px 10px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 0.78rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        
+        .kp-badge-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+        .kp-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 9px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+        .kp-badge-label {
+            opacity: 0.75;
+            font-weight: 500;
+        }
+        .kp-badge.info { background: #dbeafe; color: #1e40af; }
+        .kp-badge.success { background: #dcfce7; color: #166534; }
+        .kp-badge.warning { background: #fef9c3; color: #854d0e; }
+        .kp-badge.purple { background: #ede9fe; color: #6d28d9; }
+        .kp-badge.gray { background: #f1f5f9; color: #475569; }
+        .kp-badge.red { background: #fee2e2; color: #991b1b; }
+        .kp-section-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted, #64748b);
+            margin: 12px 0 6px 0;
+        }
+        .kp-items-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            margin-top: 4px;
+        }
+        .kp-items-table th {
+            text-align: left;
+            padding: 4px 6px;
+            background: var(--bg-tertiary, #f1f5f9);
+            border-radius: 4px;
+            font-weight: 700;
+            color: var(--text-muted, #64748b);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            font-size: 0.7rem;
+        }
+        .kp-items-table td {
+            padding: 4px 6px;
+            border-top: 1px solid var(--border-light, #e2e8f0);
+            vertical-align: top;
+        }
+        .kp-items-table tr:hover td {
+            background: var(--bg-tertiary, #f1f5f9);
+        }
+
+        .search-wrapper {
+            position: relative;
+            margin-bottom: 16px;
+        }
+        .search-box {
+            width: 100%;
+            padding: 10px 38px 10px 14px;
+            background: var(--bg-secondary, #ffffff);
+            border: 1px solid var(--border-light, #e2e8f0);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            color: var(--text-primary, #0f172a);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .search-box:focus {
+            outline: none;
+            border-color: var(--border-dark, #94a3b8);
+        }
+        .search-box::placeholder {
+            color: var(--text-muted, #64748b);
+        }
+
+        .search-clear-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted, #64748b);
+            padding: 4px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .search-clear-btn:hover {
+            color: var(--text-primary, #0f172a);
+            background: var(--bg-tertiary, #f1f5f9);
+        }
+        .search-clear-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .stat-item {
+            padding: 8px 14px;
+            background: var(--bg-secondary, #ffffff);
+            border: 1px solid var(--border-light, #e2e8f0);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--text-muted, #64748b);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        .stat-item:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .stat-item.active {
+            border-color: var(--accent-gradient-start, #7c3aed);
+            background: linear-gradient(135deg, #ede9fe 0%, #f1f5f9 100%);
+            color: var(--text-primary, #0f172a);
+        }
+        .stat-item.sort-btn {
+            background: var(--bg-tertiary, #f1f5f9);
+            color: var(--text-primary, #0f172a);
+        }
+        .stat-item.sort-btn:hover {
+            background: var(--bg-secondary, #ffffff);
+        }
+        .stat-item.sort-btn.active {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+            color: white;
+        }
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .modal-btn.cancel {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(239,68,68,0.2);
+        }
+        .modal-btn.cancel:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(239,68,68,0.3);
+        }
+        .modal-btn.confirm {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(34,197,94,0.2);
+        }
+        .modal-btn.confirm:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(34,197,94,0.3);
+        }
+
+        
+        .date-picker-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        .date-picker-trigger {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            user-select: none;
+        }
+        .date-picker-dropdown {
+            position: fixed;
+            background: var(--bg-secondary, #ffffff);
+            border: 1px solid var(--border-light, #e2e8f0);
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            z-index: 999999 !important;
+            padding: 12px;
+            display: none;
+            min-width: 280px;
+        }
+        .date-picker-dropdown.open {
+            display: block;
+        }
+        .date-picker-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .date-picker-nav {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: var(--text-muted, #64748b);
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .date-picker-nav:hover {
+            background: var(--bg-tertiary, #f1f5f9);
+            color: var(--text-primary, #0f172a);
+        }
+        .date-picker-current-month {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-primary, #0f172a);
+        }
+        .date-picker-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            margin-bottom: 4px;
+        }
+        .date-picker-weekday {
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted, #64748b);
+            padding: 4px 0;
+        }
+        .date-picker-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+        .date-picker-day {
+            text-align: center;
+            padding: 6px 0;
+            font-size: 0.85rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: none;
+            background: none;
+            color: var(--text-primary, #0f172a);
+            font-family: inherit;
+        }
+        .date-picker-day:hover {
+            background: var(--bg-tertiary, #f1f5f9);
+        }
+        .date-picker-day.other-month {
+            color: var(--text-muted, #94a3b8);
+            opacity: 0.5;
+        }
+        .date-picker-day.today {
+            border: 1px solid var(--accent-gradient-start, #7c3aed);
+            color: var(--accent-gradient-start, #7c3aed);
+            font-weight: 600;
+        }
+        .date-picker-day.selected {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+            color: white;
+            font-weight: 600;
+        }
+        .date-picker-day.selected.today {
+            border-color: white;
+        }
+        .date-picker-day.empty {
+            cursor: default;
+            pointer-events: none;
+        }
+        .date-picker-selected-label {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted, #64748b);
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border-light, #e2e8f0);
+        }
+        .date-picker-selected-label span {
+            color: var(--accent-gradient-start, #7c3aed);
+            font-weight: 600;
+        }
+        .date-picker-clear-btn {
+            display: block;
+            width: 100%;
+            margin-top: 8px;
+            padding: 6px;
+            background: var(--bg-tertiary, #f1f5f9);
+            border: 1px solid var(--border-light, #e2e8f0);
+            border-radius: 6px;
+            color: var(--text-muted, #64748b);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .date-picker-clear-btn:hover {
+            background: var(--bg-secondary, #ffffff);
+            color: var(--text-primary, #0f172a);
+        }
+    </style>
+</head>
+<body>
+
+<div class="loading" id="loadingState">
+    <div class="skeleton-item"><div class="skeleton-info"><div class="skeleton-line title"></div><div class="skeleton-line meta"></div></div></div>
+    <div class="skeleton-item"><div class="skeleton-info"><div class="skeleton-line title"></div><div class="skeleton-line meta"></div></div></div>
+    <div class="skeleton-item"><div class="skeleton-info"><div class="skeleton-line title"></div><div class="skeleton-line meta"></div></div></div>
+    <div class="skeleton-item"><div class="skeleton-info"><div class="skeleton-line title"></div><div class="skeleton-line meta"></div></div></div>
+    <div class="skeleton-item"><div class="skeleton-info"><div class="skeleton-line title"></div><div class="skeleton-line meta"></div></div></div>
+    <div class="skeleton-item"><div class="skeleton-info"><div class="skeleton-line title"></div><div class="skeleton-line meta"></div></div></div>
+</div>
+
+<div id="contentArea" style="display: none;">
+    <div class="search-wrapper">
+        <input type="text" class="search-box" id="searchBox" placeholder="Поиск по заказчику">
+        <button class="search-clear-btn" id="searchClearBtn" title="Очистить">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+
+    <div class="stats" id="statsArea"></div>
+
+    <div class="file-list" id="fileList"></div>
+</div>
+
+<script>
+
+    function sendMessage(action, data) {
+        window.parent.postMessage({ action, data }, '*');
+    }
+
+    function renderFileList(fileList, loading = false) {
+        const container = document.getElementById('fileList');
+        const fragment = document.createDocumentFragment();
+
+        if (fileList.length === 0) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'empty-state';
+            emptyDiv.innerHTML = '<p>Ничего не найдено</p>';
+            fragment.appendChild(emptyDiv);
+        } else if (loading) {
+            for (let i = 0; i < Math.min(fileList.length, 6); i++) {
+                const skel = document.createElement('div');
+                skel.className = 'skeleton-item';
+                skel.innerHTML = '<div class="skeleton-info"><div class="skeleton-line title"></div><div class="skeleton-line meta"></div></div>';
+                fragment.appendChild(skel);
+            }
+        } else {
+            fileList.forEach(file => {
+                const item = document.createElement('div');
+                item.className = 'file-item';
+                item.dataset.filename = file.name;
+
+               const date = file.modifiedAt || file.date;
+                const formattedDate = date ? new Date(date).toLocaleString('ru-RU') : '—';
+                const author = file.createdBy || '—';
+                const kpDate = file.fileDate ? new Date(file.fileDate).toLocaleDateString('ru-RU') : '—';
+                const kpNumber = file.kpNumber || '';
+                const kpLabel = kpNumber ? `КП №${kpNumber} (${kpDate})` : `КП №${kpDate}`;
+
+                item.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-name">${escapeHtml(file.customer || file.name)}</div>
+                        <div class="file-meta"><span>${formattedDate}</span><span>·</span><span>${escapeHtml(author)}</span><span>·</span><span>${escapeHtml(kpLabel)}</span></div>
+                    </div>
+                    <div class="file-actions" style="display: none;">
+                        <button class="btn-preview-file" onclick="event.stopPropagation(); previewFile('${escapeHtml(file.name)}')" title="Просмотр">
+                            <img src="/img/btn/view.svg" alt="" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;"> Просмотр
+                        </button>
+                        <button class="btn-load-file" onclick="event.stopPropagation(); loadFile('${escapeHtml(file.name)}')" title="Загрузить в форму">
+                            <img src="/img/btn/down.svg" alt="" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;"> Загрузить
+                        </button>
+                    </div>
+                `;
+
+                item.addEventListener('click', function() {
+                    document.querySelectorAll('.file-item').forEach(el => {
+                        if (el !== item) {
+                            const actions = el.querySelector('.file-actions');
+                            if (actions) actions.style.display = 'none';
+                        }
+                    });
+                    const actions = item.querySelector('.file-actions');
+                    if (actions) {
+                        actions.style.display = actions.style.display === 'none' ? 'flex' : 'none';
+                    }
+                });
+
+                fragment.appendChild(item);
+            });
+        }
+
+        container.replaceChildren(fragment);
+
+        document.querySelectorAll('.file-item').forEach(el => {
+            const filename = el.dataset.filename;
+            if (filename === window.activeFile) {
+                el.classList.add('active');
+            } else {
+                el.classList.remove('active');
+            }
+        });
+    }
+
+    let currentSortAuthor = 'all';
+    
+    function resetAllFilters() {
+        currentSortAuthor = 'all';
+        datePickerState.selectedDate = null;
+        
+        document.querySelectorAll('.sort-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('datePickerTrigger')?.classList.remove('active');
+        
+        updateDateSelectedLabel();
+        applyAllFilters();
+    }
+    
+    function applyAllFilters() {
+        let result = [...files];
+        
+        if (currentSortAuthor !== 'all') {
+            result = result.filter(f => f.createdBy === currentSortAuthor);
+        }
+        
+        if (datePickerState.selectedDate) {
+            result = result.filter(f => {
+                const fileDate = f.fileDate;
+                if (!fileDate) return false;
+                const fileDateStr = new Date(fileDate).toISOString().split('T')[0];
+                return fileDateStr === datePickerState.selectedDate;
+            });
+        }
+        
+        const searchQuery = (document.getElementById('searchBox')?.value || '').toLowerCase().trim();
+        if (searchQuery) {
+            result = result.filter(f => 
+                (f.name || '').toLowerCase().includes(searchQuery) || 
+                (f.customer || '').toLowerCase().includes(searchQuery)
+            );
+        }
+        
+        filteredFiles = result;
+        
+        const resetBtn = document.getElementById('resetAllBtn');
+        if (resetBtn) {
+            resetBtn.style.display = (currentSortAuthor !== 'all' || datePickerState.selectedDate) ? 'flex' : 'none';
+        }
+        
+        renderFileList(filteredFiles);
+    }
+    
+    function sortByAuthor(author, btnElement) {
+        currentSortAuthor = author;
+        
+        document.querySelectorAll('.sort-btn').forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+        
+        applyAllFilters();
+    }
+
+    const searchBox = document.getElementById('searchBox');
+    const searchClearBtn = document.getElementById('searchClearBtn');
+
+    searchBox.addEventListener('input', function() {
+        const query = this.value.toLowerCase().trim();
+        if (searchClearBtn) {
+            searchClearBtn.style.display = this.value.length > 0 ? 'flex' : 'none';
+        }
+        applyAllFilters();
+    });
+
+    searchClearBtn.addEventListener('click', function() {
+        searchBox.value = '';
+        searchClearBtn.style.display = 'none';
+        applyAllFilters();
+        searchBox.focus();
+    });
+
+    let activeFile = null;
+
+    function loadFile(filename) {
+        fetch(`/api/files/${encodeURIComponent(filename)}`)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success) {
+                    sendMessage('showToast', { message: 'Ошибка: ' + data.error, type: 'error' });
+                    return;
+                }
+                const createdBy = data.data.createdBy || '';
+                const currentUser = localStorage.getItem('gen_cp_user') || '';
+                if (createdBy && currentUser && createdBy !== currentUser) {
+                    showLoadConfirmModal(filename, data.data, createdBy);
+                } else {
+                    activeFile = filename;
+                    activeFileData = data.data;
+                    sendMessage('loadFile', { ...data.data, fileName: filename });
+                }
+            })
+            .catch(err => {
+                sendMessage('showToast', { message: 'Ошибка загрузки: ' + err.message, type: 'error' });
+            });
+    }
+
+    function showLoadConfirmModal(filename, data, createdBy) {
+        const modal = document.createElement('div');
+        modal.className = 'preview-modal';
+        modal.innerHTML = `
+            <div class="preview-modal-content">
+                <div class="preview-modal-header">
+                    <h3>Файл создан другим пользователем</h3>
+                </div>
+                <div class="preview-modal-body">
+                    <p>Файл создан пользователем: <strong>${escapeHtml(createdBy)}</strong></p>
+                    <p>Рекомендуем связаться с автором для согласования.</p>
+                    <p>Загрузить файл?</p>
+                    <div style="display:flex;gap:12px;margin-top:16px;justify-content:flex-end;">
+                        <button class="modal-btn cancel" id="loadModalCancel"><img src="/img/btn/cancel.svg" alt="" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"> Отмена</button>
+                        <button class="modal-btn confirm" id="loadModalConfirm"><img src="/img/btn/ok.svg" alt="" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"> Загрузить</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        modal.querySelector('#loadModalCancel').addEventListener('click', () => {
+            modal.remove();
+            sendMessage('showToast', { message: 'Загрузка отменена', type: 'info' });
+        });
+        modal.querySelector('#loadModalConfirm').addEventListener('click', () => {
+            modal.remove();
+            sendMessage('loadFile', { ...data, fileName: filename });
+        });
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+    }
+
+    function previewFile(filename) {
+        fetch(`/api/files/${encodeURIComponent(filename)}`)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success) throw new Error(data.error);
+
+                const meta = data.data.meta || {};
+                const conditions = data.data.conditions || {};
+                const items = data.data.items || [];
+                const customerName = meta.customer || '—';
+
+                const itemsHtml = items.length > 0 ? (() => {
+                    let totalQty = 0, totalSum = 0, totalVatSum = 0;
+                    const rows = items.map((item, i) => {
+                        const lineSum = item.qty * item.price;
+                        const lineVatSum = lineSum * (1 + item.vatRate / 100);
+                        totalQty += item.qty;
+                        totalSum += lineSum;
+                        totalVatSum += lineVatSum;
+                        return `<tr>
+                            <td style="color:var(--text-muted)">${i + 1}</td>
+                            <td>${escapeHtml(item.name)}</td>
+                            <td style="text-align:center">${item.qty} ${item.unit}</td>
+                            <td style="text-align:right;font-weight:600">${lineVatSum.toFixed(2).replace('.', ',')}</td>
+                        </tr>`;
+                    }).join('\n');
+                    return `<table class="kp-items-table">
+                        <thead><tr>
+                            <th>#</th><th>Наименование</th><th style="text-align:center">Кол-во</th><th style="text-align:right">Сумма (с НДС)</th>
+                        </tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                    <div class="kp-badge-row" style="margin-top:6px;justify-content:flex-end;">
+                        <span class="kp-badge red"><span class="kp-badge-label">Итого с НДС:</span> ${totalVatSum.toFixed(2).replace('.', ',')} BYN</span>
+                    </div>`;
+                })() : '<p style="color:var(--text-muted)">Нет позиций</p>';
+
+                const html = `
+                    <div class="preview-modal-body">
+                        <div class="kp-section-title">Сделка</div>
+                        <div class="kp-badge-row">
+                            <span class="kp-badge purple"><span class="kp-badge-label">Заказчик:</span> ${escapeHtml(meta.customer || '—')}</span>
+                            <span class="kp-badge info"><span class="kp-badge-label">Дата КП:</span> ${meta.date ? new Date(meta.date).toLocaleDateString('ru-RU') : '—'}</span>
+                        </div>
+                        <div class="kp-badge-row">
+                            <span class="kp-badge warning"><span class="kp-badge-label">№ КП:</span> ${escapeHtml(meta.kpNumber || '—')}</span>
+                            <span class="kp-badge success"><span class="kp-badge-label">Срок действия:</span> ${meta.validityDays ? meta.validityDays + ' дн.' : '—'}</span>
+                        </div>
+                        <div class="kp-badge-row">
+                            <span class="kp-badge gray"><span class="kp-badge-label">Автор:</span> ${escapeHtml(data.data.createdBy || '—')}</span>
+                        </div>
+
+                        <div class="kp-section-title">Условия</div>
+                        <div class="kp-badge-row">
+                            <span class="kp-badge info"><span class="kp-badge-label">Оплата:</span> ${escapeHtml(conditions.payment || '—')}</span>
+                            <span class="kp-badge warning"><span class="kp-badge-label">Поставка:</span> ${escapeHtml(conditions.deliveryTime || '—')}</span>
+                        </div>
+                        <div class="kp-badge-row">
+                            <span class="kp-badge success"><span class="kp-badge-label">Гарантия:</span> ${escapeHtml(conditions.warranty || '—')}</span>
+                            <span class="kp-badge purple"><span class="kp-badge-label">Доставка:</span> ${escapeHtml(conditions.shipping || '—')}</span>
+                        </div>
+
+                        <div class="kp-section-title">Позиции (${items.length})</div>
+                        ${itemsHtml}
+                    </div>
+                `;
+
+                const modal = document.createElement('div');
+                modal.className = 'preview-modal';
+                modal.innerHTML = `
+                    <div class="preview-modal-content">
+                        <div class="preview-modal-header">
+                            <h3>${escapeHtml(customerName)}</h3>
+                            <button class="preview-modal-close" id="previewClose">&times;</button>
+                        </div>
+                        ${html}
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                document.body.style.overflow = 'hidden';
+                sendMessage('lockScroll', true);
+
+                modal.querySelector('#previewClose').addEventListener('click', () => { modal.remove(); document.body.style.overflow = ''; sendMessage('lockScroll', false); });
+            })
+            .catch(err => {
+                sendMessage('showToast', { message: 'Ошибка просмотра: ' + err.message, type: 'error' });
+            });
+    }
+
+    let datePickerState = {
+        open: false,
+        currentMonth: null,
+        currentYear: null,
+        selectedDate: null
+    };
+
+    const MONTHS_RU = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+
+  function initDatePicker() {
+        const dropdown = document.getElementById('datePickerDropdown');
+        const trigger = document.getElementById('datePickerTrigger');
+
+        if (!dropdown || !trigger) return;
+
+        if (datePickerState.currentMonth === null || datePickerState.currentYear === null) {
+            const now = new Date();
+            datePickerState.currentMonth = now.getMonth();
+            datePickerState.currentYear = now.getFullYear();
+        }
+
+        trigger.onclick = function(e) {
+            e.stopPropagation();
+            toggleDatePicker();
+        };
+
+        const prevBtn = document.getElementById('datePickerPrev');
+        const nextBtn = document.getElementById('datePickerNext');
+        if (prevBtn) {
+            prevBtn.onclick = function(e) {
+                e.stopPropagation();
+                datePickerState.currentMonth--;
+                if (datePickerState.currentMonth < 0) {
+                    datePickerState.currentMonth = 11;
+                    datePickerState.currentYear--;
+                }
+                renderDatePickerCalendar();
+            };
+        }
+        if (nextBtn) {
+            nextBtn.onclick = function(e) {
+                e.stopPropagation();
+                datePickerState.currentMonth++;
+                if (datePickerState.currentMonth > 11) {
+                    datePickerState.currentMonth = 0;
+                    datePickerState.currentYear++;
+                }
+                renderDatePickerCalendar();
+            };
+        }
+
+        renderDatePickerCalendar();
+    }
+
+    function handleDocumentClick(e) {
+        const dropdown = document.getElementById('datePickerDropdown');
+        const trigger = document.getElementById('datePickerTrigger');
+        if (dropdown && trigger && dropdown.classList.contains('open')) {
+            if (!dropdown.contains(e.target) && e.target !== trigger) {
+                closeDatePicker();
+            }
+        }
+    }
+
+    document.addEventListener('click', handleDocumentClick);
+
+    function getDropdown() {
+        return document.getElementById('datePickerDropdown') || window.parent.document.getElementById('datePickerDropdown');
+    }
+
+    function toggleDatePicker() {
+        const dropdown = getDropdown();
+        if (dropdown && dropdown.classList.contains('open')) {
+            closeDatePicker();
+        } else {
+            openDatePicker();
+        }
+    }
+
+    function openDatePicker() {
+        let dropdown = document.getElementById('datePickerDropdown');
+        if (!dropdown) return;
+        const trigger = document.getElementById('datePickerTrigger');
+        if (trigger) {
+            const rect = trigger.getBoundingClientRect();
+            dropdown.style.top = (rect.bottom + 4) + 'px';
+            dropdown.style.left = rect.left + 'px';
+        }
+        dropdown.classList.add('open');
+        renderDatePickerCalendar();
+    }
+
+    function closeDatePicker() {
+        const dropdown = document.getElementById('datePickerDropdown');
+        if (!dropdown) return;
+        dropdown.classList.remove('open');
+    }
+
+  function renderDatePickerCalendar() {
+        const monthLabel = document.getElementById('datePickerMonth');
+        const daysContainer = document.getElementById('datePickerDays');
+        const selectedLabel = document.getElementById('datePickerSelected');
+
+        if (!monthLabel || !daysContainer) return;
+
+        const year = datePickerState.currentYear;
+        const month = datePickerState.currentMonth;
+
+        monthLabel.textContent = `${MONTHS_RU[month]} ${year}`;
+
+        const firstDay = new Date(year, month, 1);
+        let startDay = firstDay.getDay();
+        if (startDay === 0) startDay = 7; // Пн=1, Вс=7
+        startDay--; // 0-indexed
+
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let html = '';
+
+        for (let i = startDay - 1; i >= 0; i--) {
+            const d = new Date(year, month - 1, daysInPrevMonth - i);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const dateStr = `${yyyy}-${mm}-${dd}`;
+            html += `<button class="date-picker-day other-month" data-date="${dateStr}">${daysInPrevMonth - i}</button>`;
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateObj = new Date(year, month, day);
+            const year2 = dateObj.getFullYear();
+            const month2 = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day2 = String(dateObj.getDate()).padStart(2, '0');
+            const dateStr = `${year2}-${month2}-${day2}`;
+            
+            let classes = 'date-picker-day';
+            
+            const todayLocal = new Date();
+            const todayStr = `${todayLocal.getFullYear()}-${String(todayLocal.getMonth() + 1).padStart(2, '0')}-${String(todayLocal.getDate()).padStart(2, '0')}`;
+            if (dateStr === todayStr) {
+                classes += ' today';
+            }
+            
+            if (datePickerState.selectedDate === dateStr) {
+                classes += ' selected';
+            }
+            
+            html += `<button class="${classes}" data-date="${dateStr}">${day}</button>`;
+        }
+
+        const totalCells = startDay + daysInMonth;
+        const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+        for (let i = 1; i <= remaining; i++) {
+            const d = new Date(year, month + 1, i);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const dateStr = `${yyyy}-${mm}-${dd}`;
+            html += `<button class="date-picker-day other-month" data-date="${dateStr}">${i}</button>`;
+        }
+
+        daysContainer.innerHTML = html;
+
+        daysContainer.onclick = function(e) {
+            e.stopPropagation();
+            const btn = e.target.closest('.date-picker-day');
+            if (!btn) return;
+            const selectedDate = btn.getAttribute('data-date');
+            if (!selectedDate) return;
+
+            datePickerState.selectedDate = selectedDate;
+            updateDateSelectedLabel();
+            applyAllFilters();
+            renderDatePickerCalendar();
+        };
+    }
+
+    function updateDateSelectedLabel() {
+        const selectedLabel = document.getElementById('datePickerSelected');
+        const labelSpan = document.getElementById('datePickerLabel');
+        
+        if (!selectedLabel) return;
+
+        if (!datePickerState.selectedDate) {
+            selectedLabel.innerHTML = 'Выберите <span>одну дату</span>';
+            if (labelSpan) labelSpan.textContent = 'По дате';
+            return;
+        }
+
+        const selectedFormatted = new Date(datePickerState.selectedDate).toLocaleDateString('ru-RU');
+        selectedLabel.innerHTML = `Выбрана: <span>${selectedFormatted}</span>`;
+        selectedLabel.innerHTML += `<button class="date-picker-clear-btn" id="datePickerClear">Сбросить</button>`;
+        
+        if (labelSpan) labelSpan.textContent = selectedFormatted;
+
+        setTimeout(() => {
+            const clearBtn = document.getElementById('datePickerClear');
+            if (clearBtn) {
+                clearBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    datePickerState.selectedDate = null;
+                    updateDateSelectedLabel();
+                    applyAllFilters();
+                    renderDatePickerCalendar();
+                };
+            }
+        }, 0);
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    let isLoaded = false;
+
+    function initFileList(fileData) {
+        if (fileData && fileData.success) {
+            files = fileData.files || [];
+        } else {
+            fetch('/api/files')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        files = data.files || [];
+                    } else {
+                        files = [];
+                    }
+                    files.sort((a, b) => {
+                        const kpA = a.fileDate ? new Date(a.fileDate).getTime() : 0;
+                        const kpB = b.fileDate ? new Date(b.fileDate).getTime() : 0;
+                        if (kpB !== kpA) return kpB - kpA;
+                        const timeA = new Date(a.modifiedAt || a.date).getTime();
+                        const timeB = new Date(b.modifiedAt || b.date).getTime();
+                        return timeB - timeA;
+                    });
+                })
+                .then(() => {
+                    isLoaded = true;
+                    updateLoadingState();
+                })
+                .catch(err => {
+                    console.error('[Load HTML] Ошибка инициализации:', err);
+                    files = [];
+                    isLoaded = true;
+                    updateLoadingState();
+                });
+            return;
+        }
+        files.sort((a, b) => {
+            const kpA = a.fileDate ? new Date(a.fileDate).getTime() : 0;
+            const kpB = b.fileDate ? new Date(b.fileDate).getTime() : 0;
+            if (kpB !== kpA) return kpB - kpA;
+            const timeA = new Date(a.modifiedAt || a.date).getTime();
+            const timeB = new Date(b.modifiedAt || b.date).getTime();
+            return timeB - timeA;
+        });
+        isLoaded = true;
+        updateLoadingState();
+    }
+
+    initFileList();
+
+    function updateLoadingState() {
+        const loadingState = document.getElementById('loadingState');
+        const contentArea = document.getElementById('contentArea');
+        const fileList = document.getElementById('fileList');
+        const statsArea = document.getElementById('statsArea');
+
+        if (isLoaded) {
+            loadingState.style.display = 'none';
+            contentArea.style.display = 'block';
+        } else {
+
+            loadingState.style.display = 'block';
+            contentArea.style.display = 'none';
+        }
+
+        if (files.length === 0) {
+            fileList.innerHTML = `
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <p>Нет сохранённых файлов</p>
+                </div>
+            `;
+            statsArea.innerHTML = '';
+        } else {
+            renderFileList(files, false);
+            const authors = new Set(files.map(f => f.createdBy || '—'));
+            const sortedAuthors = Array.from(authors).sort();
+            
+            let buttonsHtml = `
+                <div class="date-picker-wrapper">
+                    <div class="stat-item sort-btn date-picker-trigger" id="datePickerTrigger">
+                        📅
+                    </div>
+                    <div class="date-picker-dropdown" id="datePickerDropdown">
+                        <div class="date-picker-header">
+                            <button class="date-picker-nav" id="datePickerPrev">‹</button>
+                            <span class="date-picker-current-month" id="datePickerMonth"></span>
+                            <button class="date-picker-nav" id="datePickerNext">›</button>
+                        </div>
+                        <div class="date-picker-weekdays">
+                            <div class="date-picker-weekday">Пн</div>
+                            <div class="date-picker-weekday">Вт</div>
+                            <div class="date-picker-weekday">Ср</div>
+                            <div class="date-picker-weekday">Чт</div>
+                            <div class="date-picker-weekday">Пт</div>
+                            <div class="date-picker-weekday">Сб</div>
+                            <div class="date-picker-weekday">Вс</div>
+                        </div>
+                        <div class="date-picker-days" id="datePickerDays"></div>
+                        <div class="date-picker-selected-label" id="datePickerSelected"></div>
+                    </div>
+                </div>
+            `;
+
+            for (const author of sortedAuthors) {
+                const escapedAuthor = escapeHtml(author);
+                buttonsHtml += `
+                    <div class="stat-item sort-btn" data-author="${escapeHtml(author)}" onclick="sortByAuthor('${escapeHtml(author)}', this)">
+                        📁 ${escapedAuthor}
+                    </div>
+                `;
+            }
+
+            buttonsHtml += `<div style="flex:1;"></div>`;
+            buttonsHtml += `
+                <div class="stat-item sort-btn reset-all-btn" id="resetAllBtn" onclick="resetAllFilters()" title="Сбросить все фильтры" style="display:none;">
+                    ✕
+                </div>
+            `;
+            
+
+            statsArea.innerHTML = buttonsHtml;
+            initDatePicker();
+        }
+    }
+
+    window.addEventListener('message', function(e) {
+        if (!e.data || !e.data.action) return;
+
+        switch (e.data.action) {
+            case 'refreshFileList':
+                initFileList();
+                break;
+            case 'resetFileList':
+                document.querySelectorAll('.file-actions').forEach(el => el.style.display = 'none');
+                const searchBox = document.getElementById('searchBox');
+                if (searchBox) searchBox.value = '';
+                break;
+            case 'closePreview':
+                document.querySelectorAll('.preview-modal').forEach(el => el.remove());
+                break;
+            case 'setFilesList':
+                files = [];
+                isLoaded = false;
+                initFileList({ success: true, files: e.data.files, update: e.data.update });
+                break;
+        }
+    });
+</script>
+
+</body>
+</html>

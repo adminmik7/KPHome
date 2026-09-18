@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web-form KP &middot; Settings</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="/img/favicon.svg">
+    <style>
+        :root {
+            --bg-page: #f9fafb;
+            --bg-surface: #ffffff;
+            --bg-subtle: #f3f4f6;
+            --bg-input: #fafafa;
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+            --text-muted: #9ca3af;
+            --border-default: #e5e7eb;
+            --border-focus: #d1d5db;
+            --accent: #0f172a;
+            --accent-hover: #1e293b;
+            --danger: #dc2626;
+            --danger-hover: #b91c1c;
+            --success: #059669;
+            --success-hover: #047857;
+            --warning-bg: #fffbeb;
+            --warning-border: #fde68a;
+            --warning-text: #92400e;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+            --shadow-lg: 0 12px 32px rgba(0,0,0,0.1);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-page);
+            color: var(--text-primary);
+            line-height: 1.5;
+            font-size: 14px;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-default);
+        }
+
+        .page-header-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--accent);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-header-icon svg {
+            width: 20px;
+            height: 20px;
+            color: white;
+        }
+
+        .page-header h1 {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+        }
+
+        
+        .card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid var(--border-default);
+        }
+
+        .card-header svg {
+            width: 18px;
+            height: 18px;
+            color: var(--text-muted);
+        }
+
+        .card-header h2 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: var(--text-primary);
+        }
+
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .data-table thead th:first-child { width: 30%; }
+        .data-table thead th:nth-child(2) { width: 25%; min-width: 160px; }
+        .data-table thead th:nth-child(3) { width: 25%; min-width: 200px; }
+
+        .data-table thead th {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            padding: 12px 24px;
+            background: var(--bg-subtle);
+            border-bottom: 1px solid var(--border-default);
+            text-align: left;
+        }
+
+        .data-table tbody td input[type="text"][readonly] {
+            min-width: 180px;
+        }
+
+        .data-table tbody td {
+            padding: 14px 24px;
+            border-bottom: 1px solid var(--border-default);
+            vertical-align: middle;
+            overflow: visible;
+        }
+
+        .data-table tbody td:nth-child(3) input[type="text"][readonly] {
+            min-width: 200px;
+            white-space: nowrap;
+            overflow: visible;
+            color: #000 !important;
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .role-select { min-width: 140px; width: auto; appearance: none; padding-right: 32px; font-family: 'Inter', sans-serif; font-size: 0.85rem; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; cursor: pointer; white-space: nowrap; overflow: visible; }
+
+        .data-table tbody tr:hover {
+            background: var(--bg-input);
+        }
+
+        .user-login-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: white;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        .admin-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 999px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--danger);
+        }
+
+        
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-sm);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(15,23,42,0.06);
+        }
+
+        input[readonly] {
+            background: var(--bg-subtle);
+            color: var(--text-muted);
+            cursor: default;
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 32px;
+        }
+
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 9px 16px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: var(--accent-hover);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        .btn-success:hover:not(:disabled) {
+            background: var(--success-hover);
+        }
+
+        .btn-cancel-blue {
+            background: #2563eb;
+            color: white;
+            border: 1px solid #2563eb;
+        }
+        .btn-cancel-blue:hover:not(:disabled) {
+            background: #1d4ed8;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-default);
+        }
+        .btn-ghost:hover:not(:disabled) {
+            background: var(--bg-subtle);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        .btn-danger:hover:not(:disabled) {
+            background: var(--danger-hover);
+        }
+
+        .btn-edit {
+            background: var(--success);
+            color: white;
+        }
+        .btn-edit:hover:not(:disabled) {
+            background: var(--success-hover);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        
+        .action-row {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-default);
+            background: var(--bg-subtle);
+        }
+
+        
+        .conditions-list {
+            padding: 20px 24px;
+        }
+
+        .condition-group-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            padding-bottom: 12px;
+            margin-bottom: 0;
+            border-bottom: 1px solid var(--border-default);
+        }
+
+        .condition-group-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+        }
+
+        .group-chevron {
+            width: 14px;
+            height: 14px;
+            color: var(--text-muted);
+            transition: transform 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .condition-group-header.collapsed .group-chevron {
+            transform: rotate(-90deg);
+        }
+
+        .condition-items-list {
+            margin-top: 12px;
+        }
+
+        .condition-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-sm);
+            margin-bottom: 6px;
+            cursor: grab;
+            user-select: none;
+            transition: box-shadow 0.15s, opacity 0.15s;
+        }
+
+        .condition-item:hover {
+            box-shadow: var(--shadow-sm);
+        }
+
+        .condition-item.dragging {
+            opacity: 0.4;
+            cursor: grabbing;
+        }
+
+        .drag-handle {
+            width: 16px;
+            height: 16px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            display: grid;
+            place-items: center;
+        }
+
+        .condition-item input[type="text"] {
+            flex: 1;
+            padding: 4px 8px;
+            font-size: 0.85rem;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            color: #000 !important;
+        }
+
+        .condition-item input[type="text"]:focus {
+            box-shadow: inset 0 -1px 0 var(--border-focus);
+        }
+
+        .btn-delete-condition {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+
+        .btn-delete-condition:hover {
+            background: #fef2f2;
+            color: var(--danger);
+        }
+
+        .btn-delete-condition svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            width: 400px;
+            max-width: 92vw;
+            border: 1px solid var(--border-default);
+            transform: scale(0.96);
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-overlay.show .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid var(--border-default);
+        }
+
+        .modal-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .modal-body {
+            padding: 20px 24px;
+        }
+
+        .modal-body label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .modal-body input,
+        .modal-body select {
+            margin-bottom: 14px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-default);
+        }
+
+        
+        #toastContainer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 8px;
+            max-width: 360px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            padding: 14px 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            pointer-events: auto;
+            transform: translateX(120%);
+            opacity: 0;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .toast-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .toast-success .toast-icon { color: var(--success); }
+        .toast-error .toast-icon { color: var(--danger); }
+        .toast-warning .toast-icon { color: #d97706; }
+        .toast-info .toast-icon { color: #2563eb; }
+
+        .toast-content {
+            flex: 1;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            color: var(--text-secondary);
+        }
+
+        .toast-close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0;
+            font-size: 1rem;
+            line-height: 1;
+            flex-shrink: 0;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+
+        .toast-close-btn:hover { opacity: 1; }
+
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        
+        @media (max-width: 768px) {
+            .app-container { padding: 20px 12px; }
+            .data-table thead th,
+            .data-table tbody td { padding: 10px 14px; }
+            .action-row { justify-content: stretch; flex-direction: column; }
+            .action-row .btn { width: 100%; }
+        }
+
+        @media print {
+            #toastContainer, .modal-overlay { display: none !important; }
+            body { background: white; }
+            .card { box-shadow: none; border-color: #ddd; break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div id="toastContainer"></div>
+
+    
+    <div class="modal-overlay" id="editUserModal">
+        <div class="modal">
+            <div class="modal-header"><h3>Редактировать пользователя</h3></div>
+            <div class="modal-body">
+                <label>Пароль (оставьте пустым, чтобы не менять)</label>
+                <input type="password" id="editPassword" placeholder="Новый пароль">
+                <label>Подтверждение пароля</label>
+                <input type="password" id="editConfirmPassword" placeholder="Подтвердите пароль">
+                <label>Исполнитель</label>
+                <input type="text" id="editExecutor" placeholder="Исполнитель">
+                <label>Телефон</label>
+                <input type="text" id="editPhone" placeholder="Телефон">
+                <label>E-mail</label>
+                <input type="email" id="editEmail" placeholder="E-mail">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel-blue" id="editModalCancel">Отмена</button>
+                <button class="btn btn-success" id="editModalSave">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="modal-overlay" id="addUserModal">
+        <div class="modal">
+            <div class="modal-header"><h3>Добавить пользователя</h3></div>
+            <div class="modal-body">
+                <label>Логин</label>
+                <input type="text" id="newLogin" placeholder="Логин">
+                <label>Пароль</label>
+                <input type="password" id="newPass" placeholder="Пароль">
+                <label>Роль</label>
+                <select id="newRole">
+                    <option value="user">Пользователь</option>
+                    <option value="admin">Администратор</option>
+                </select>
+                <label>Исполнитель</label>
+                <input type="text" id="newExecutor" placeholder="Исполнитель">
+                <label>Телефон</label>
+                <input type="text" id="newPhone" placeholder="Телефон">
+                <label>E-mail</label>
+                <input type="email" id="newEmail" placeholder="E-mail">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel-blue" id="addModalCancel">Отмена</button>
+                <button class="btn btn-success" id="addModalSave">Добавить</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="modal-overlay" id="deleteConfirmModal">
+        <div class="modal">
+            <div class="modal-header"><h3>Подтверждение удаления</h3></div>
+            <div class="modal-body">
+                <p id="deleteConfirmMessage" style="color: var(--text-secondary);"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel-blue" id="deleteModalCancel">Отмена</button>
+                <button class="btn btn-danger" id="deleteModalConfirm">Удалить</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="modal-overlay" id="deleteUserModal">
+        <div class="modal" style="max-width:420px;">
+            <div style="padding:32px 24px 16px;text-align:center;">
+                <div style="width:56px;height:56px;margin:0 auto 16px;border-radius:50%;background:#fef2f2;display:flex;align-items:center;justify-content:center;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                </div>
+                <h3 style="margin:0 0 6px;font-size:1.1rem;">Удалить пользователя</h3>
+                <p id="deleteUserMessage" style="color:var(--text-secondary);font-size:0.9rem;margin:0;text-align:center;"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel-blue" id="deleteUserCancelBtn">Отмена</button>
+                <button class="btn btn-danger" id="deleteUserConfirmBtn">Удалить</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="app-container">
+        <div class="page-header">
+            <div class="page-header-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+            </div>
+            <h1>Настройки</h1>
+        </div>
+
+        
+        <div class="card">
+            <div class="card-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <line x1="19" y1="8" x2="19" y2="14"/>
+                    <line x1="22" y1="11" x2="16" y2="11"/>
+                </svg>
+                <h2>Пользователи</h2>
+            </div>
+            <table class="data-table" id="usersTable">
+                <thead>
+                    <tr>
+                        <th>Логин</th>
+                        <th class="col-role">Роль</th>
+                        <th>E-mail</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div class="action-row">
+                <button class="btn btn-primary" id="addUserBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Добавить пользователя
+                </button>
+                <button class="btn btn-success" id="saveAllBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    Сохранить все изменения
+                </button>
+            </div>
+        </div>
+
+        
+        <div class="card">
+            <div class="card-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 11l3 3L22 4"/>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                </svg>
+                <h2>Условия поставки</h2>
+            </div>
+            <div class="conditions-list" id="conditionsContainer"></div>
+            <div class="action-row">
+                <button class="btn btn-success" id="saveConditionsBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    Сохранить условия
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        if (window.location.pathname.endsWith('/aut.html')) {
+            history.replaceState(null, '', '/settings');
+        }
+
+        (function() {
+            if (localStorage.getItem('gen_cp_authenticated') !== 'true') {
+                window.location.href = '/';
+            }
+        })();
+
+        function sha256(message) {
+            function rotr(x, n) { return (x >>> n) | (x << (32 - n)); }
+            function ch(x, y, z) { return (x & y) ^ (~x & z); }
+            function maj(x, y, z) { return (x & y) ^ (x & z) ^ (y & z); }
+            function sigma0(x) { return rotr(x, 2) ^ rotr(x, 13) ^ rotr(x, 22); }
+            function sigma1(x) { return rotr(x, 6) ^ rotr(x, 11) ^ rotr(x, 25); }
+            function gamma0(x) { return rotr(x, 7) ^ rotr(x, 18) ^ (x >>> 3); }
+            function gamma1(x) { return rotr(x, 17) ^ rotr(x, 19) ^ (x >>> 10); }
+            const K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0x8b597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+            const H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+            const msgBytes = new TextEncoder().encode(message);
+            const msgBitLen = msgBytes.length * 8;
+            const msg = new Uint8Array(msgBytes.length + 1 + 8 + (64 - ((msgBytes.length + 1 + 8) % 64)));
+            msg.set(msgBytes); msg[msgBytes.length] = 0x80;
+            const view = new DataView(msg.buffer);
+            view.setUint32(msg.length - 4, msgBitLen >>> 0, false);
+            view.setUint32(msg.length - 8, Math.floor(msgBitLen / 0x100000000), false);
+            for (let i = 0; i < msg.length; i += 64) {
+                const W = new Uint32Array(64);
+                for (let t = 0; t < 16; t++) W[t] = view.getUint32(i + t * 4, false);
+                for (let t = 16; t < 64; t++) W[t] = (gamma1(W[t-2]) + W[t-7] + gamma0(W[t-15]) + W[t-16]) >>> 0;
+                let [a,b,c,d,e,f,g,h] = H;
+                for (let t = 0; t < 64; t++) {
+                    const T1 = (h + sigma1(e) + ch(e,f,g) + K[t] + W[t]) >>> 0;
+                    const T2 = (sigma0(a) + maj(a,b,c)) >>> 0;
+                    h=g; g=f; f=e; e=(d+T1)>>>0; d=c; c=b; b=a; a=(T1+T2)>>>0;
+                }
+                H[0]=(H[0]+a)>>>0; H[1]=(H[1]+b)>>>0; H[2]=(H[2]+c)>>>0; H[3]=(H[3]+d)>>>0;
+                H[4]=(H[4]+e)>>>0; H[5]=(H[5]+f)>>>0; H[6]=(H[6]+g)>>>0; H[7]=(H[7]+h)>>>0;
+            }
+            return H.map(x => x.toString(16).padStart(8,'0')).join('');
+        }
+
+        function showToast(message, type = 'info', duration = 4000) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            let iconSvg = '';
+            if (type === 'success') iconSvg = '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+            else if (type === 'error') iconSvg = '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+            else if (type === 'warning') iconSvg = '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>';
+            else iconSvg = '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>';
+            toast.innerHTML = `${iconSvg}<div class="toast-content">${message}</div><button class="toast-close-btn">&times;</button>`;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+            const closeBtn = toast.querySelector('.toast-close-btn');
+            const removeToast = () => {
+                toast.classList.remove('show');
+                setTimeout(() => { if (toast.parentNode) container.removeChild(toast); }, 300);
+            };
+            closeBtn.addEventListener('click', removeToast);
+            const timeoutId = setTimeout(removeToast, duration);
+        }
+
+        const currentUser = localStorage.getItem('gen_cp_user');
+        let users = [];
+        let deleteUserTargetIndex = null;
+        const tableBody = document.querySelector('#usersTable tbody');
+        let pendingEditIndex = null;
+
+        const editUserModal = document.getElementById('editUserModal');
+        const editPasswordInput = document.getElementById('editPassword');
+        const editConfirmPasswordInput = document.getElementById('editConfirmPassword');
+        const editExecutorInput = document.getElementById('editExecutor');
+        const editPhoneInput = document.getElementById('editPhone');
+        const editEmailInput = document.getElementById('editEmail');
+
+        const addUserModal = document.getElementById('addUserModal');
+        const newLoginInput = document.getElementById('newLogin');
+        const newPassInputAdd = document.getElementById('newPass');
+        const newRoleSelect = document.getElementById('newRole');
+        const newExecutorInput = document.getElementById('newExecutor');
+        const newPhoneInput = document.getElementById('newPhone');
+        const newEmailInput = document.getElementById('newEmail');
+
+        function openEditUserModal(index) {
+            pendingEditIndex = index;
+            const user = users[index];
+            editPasswordInput.value = '';
+            editConfirmPasswordInput.value = '';
+            editExecutorInput.value = user.executor || '';
+            editPhoneInput.value = user.phone || '';
+            editEmailInput.value = user.email || '';
+            editUserModal.classList.add('show');
+        }
+
+        function closeEditUserModal() {
+            editUserModal.classList.remove('show');
+            pendingEditIndex = null;
+        }
+
+        function openAddUserModal() {
+            newLoginInput.value = '';
+            newPassInputAdd.value = '';
+            newRoleSelect.value = 'user';
+            newExecutorInput.value = '';
+            newPhoneInput.value = '';
+            newEmailInput.value = '';
+            addUserModal.classList.add('show');
+        }
+
+        function closeAddUserModal() {
+            addUserModal.classList.remove('show');
+        }
+
+        document.getElementById('editModalCancel').addEventListener('click', closeEditUserModal);
+        document.getElementById('editModalSave').addEventListener('click', () => {
+            if (pendingEditIndex === null) return;
+            const newPass = editPasswordInput.value;
+            const confirmPass = editConfirmPasswordInput.value;
+            if (newPass && newPass !== confirmPass) { showToast('Пароли не совпадают', 'error'); return; }
+            if (newPass) users[pendingEditIndex].passw = newPass;
+            users[pendingEditIndex].executor = editExecutorInput.value.trim();
+            users[pendingEditIndex].phone = editPhoneInput.value.trim();
+            users[pendingEditIndex].email = editEmailInput.value.trim();
+            renderTable();
+            showToast('Данные обновлены (сохраните изменения)', 'success');
+            closeEditUserModal();
+        });
+
+        document.getElementById('addModalCancel').addEventListener('click', closeAddUserModal);
+        document.getElementById('addModalSave').addEventListener('click', () => {
+            const login = newLoginInput.value.trim();
+            const pass = newPassInputAdd.value;
+            const role = newRoleSelect.value;
+            const executor = newExecutorInput.value.trim();
+            const phone = newPhoneInput.value.trim();
+            const email = newEmailInput.value.trim();
+            if (!login) { showToast('Введите логин', 'warning'); return; }
+            if (!pass) { showToast('Введите пароль', 'warning'); return; }
+            if (users.some(u => u.login === login)) { showToast('Пользователь с таким логином уже существует', 'error'); return; }
+            users.push({ login, passw: pass, role, executor, phone, email });
+            renderTable();
+            showToast('Пользователь добавлен', 'success');
+            closeAddUserModal();
+        });
+
+        editUserModal.addEventListener('click', (e) => { if (e.target === editUserModal) closeEditUserModal(); });
+        addUserModal.addEventListener('click', (e) => { if (e.target === addUserModal) closeAddUserModal(); });
+
+        function getInitials(login) {
+            return login.slice(0, 2).toUpperCase();
+        }
+
+        const avatarColors = [
+            '#dc2626', '#ea580c', '#d97706', '#ca8a04', '#16a34a',
+            '#059669', '#0891b2', '#0284c7', '#2563eb', '#4f46e5',
+            '#6d28d9', '#8b5cf6', '#a855f7', '#c026d3', '#db2777'
+        ];
+
+        function getAvatarColor(login) {
+            let hash = 0;
+            for (let i = 0; i < login.length; i++) {
+                hash = login.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return avatarColors[Math.abs(hash) % avatarColors.length];
+        }
+
+        async function loadUsers() {
+            try {
+                const res = await fetch('/api/users');
+                if (!res.ok) throw new Error('Ошибка загрузки');
+                const data = await res.json();
+                users = data.users.map(u => ({ ...u, role: u.role || 'user' }));
+                renderTable();
+            } catch (err) { showToast('Ошибка загрузки пользователей', 'error'); }
+        }
+
+        function isAdminUser(user) { return user.role === 'admin'; }
+        function countAdmins() { return users.filter(u => u.role === 'admin').length; }
+        function canDeleteUser(index) { return users[index].login !== currentUser && !(users[index].role === 'admin' && countAdmins() <= 1); }
+
+        function renderTable() {
+            tableBody.innerHTML = '';
+            users.forEach((user, index) => {
+                const tr = document.createElement('tr');
+                const canDelete = canDeleteUser(index);
+                tr.innerHTML = `
+                    <td>
+                        <div class="user-login-cell">
+                            <div class="user-avatar" style="background:${getAvatarColor(user.login)}">${getInitials(user.login)}</div>
+                            ${user.login}
+                            ${user.role === 'admin' ? '<span class="admin-badge">Админ</span>' : ''}
+                        </div>
+                    </td>
+                    <td>
+                        <select data-index="${index}" class="role-select" ${!canDelete ? 'disabled' : ''} style="min-width:140px;">
+                            <option value="user" ${user.role === 'user' ? 'selected' : ''}>Пользователь</option>
+                            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Администратор</option>
+                        </select>
+                    </td>
+                    <td><input type="text" value="${user.email || '\u2014'}" readonly style="min-width:180px;"></td>
+                    <td class="action-cell">
+                        <button class="btn btn-sm btn-edit" data-action="edit-user" data-index="${index}">Изменить</button>
+                        ${canDelete ? `<button class="btn btn-sm btn-danger" data-action="delete" data-index="${index}">Удалить</button>` : ''}
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            document.querySelectorAll('.role-select').forEach(select => {
+                select.addEventListener('change', e => { users[e.target.dataset.index].role = e.target.value; renderTable(); });
+            });
+
+            document.querySelectorAll('[data-action="edit-user"]').forEach(btn => {
+                btn.addEventListener('click', e => openEditUserModal(parseInt(e.currentTarget.dataset.index)));
+            });
+
+            document.querySelectorAll('[data-action="delete"]').forEach(btn => {
+                btn.addEventListener('click', e => {
+                    const idx = parseInt(e.currentTarget.dataset.index);
+                    deleteUserTargetIndex = idx;
+                    document.getElementById('deleteUserMessage').textContent = `Вы действительно хотите удалить пользователя "${users[idx].login}"?`;
+                    document.getElementById('deleteUserModal').classList.add('show');
+                });
+            });
+        }
+
+        document.getElementById('deleteUserCancelBtn').addEventListener('click', () => {
+            document.getElementById('deleteUserModal').classList.remove('show');
+            deleteUserTargetIndex = null;
+        });
+
+        document.getElementById('deleteUserConfirmBtn').addEventListener('click', () => {
+            if (deleteUserTargetIndex === null) return;
+            const login = users[deleteUserTargetIndex].login;
+            users.splice(deleteUserTargetIndex, 1);
+            renderTable();
+            showToast(`Пользователь ${login} удалён`, 'info');
+            document.getElementById('deleteUserModal').classList.remove('show');
+            deleteUserTargetIndex = null;
+        });
+
+        document.getElementById('deleteUserModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('deleteUserModal')) {
+                document.getElementById('deleteUserModal').classList.remove('show');
+                deleteUserTargetIndex = null;
+            }
+        });
+
+        document.getElementById('addUserBtn').addEventListener('click', openAddUserModal);
+
+        document.getElementById('saveAllBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('saveAllBtn');
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<div class="spinner"></div> Сохранение...';
+                const res = await fetch('/api/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ users }) });
+                if (res.ok) showToast('Изменения сохранены в db.json', 'success');
+                else throw new Error('Ошибка сервера');
+            } catch (err) { showToast('Не удалось сохранить', 'error'); }
+            finally { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg> Сохранить все изменения'; }
+        });
+
+        loadUsers();
+
+        let envConditions = {};
+        let expandedGroupKey = null;
+        const conditionsContainer = document.getElementById('conditionsContainer');
+
+        const conditionLabels = {
+            payment: 'Условия оплаты',
+            deliveryTime: 'Срок поставки',
+            warranty: 'Гарантия',
+            shipping: 'Доставка'
+        };
+
+        function renderConditions() {
+            conditionsContainer.innerHTML = '';
+            ['payment', 'deliveryTime', 'warranty', 'shipping'].forEach(key => {
+                const group = document.createElement('div');
+                group.className = 'condition-group';
+                group.dataset.key = key;
+
+                const header = document.createElement('div');
+                header.className = 'condition-group-header';
+                header.innerHTML = `
+                    <span class="condition-group-label">${conditionLabels[key]}</span>
+                    <svg class="group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                `;
+                header.addEventListener('click', () => {
+                    const itemsList = group.querySelector('.condition-items-list');
+                    if (!itemsList) return;
+                    const key = group.dataset.key;
+
+                    document.querySelectorAll('.condition-group').forEach(g => {
+                        g.classList.add('collapsed-group');
+                        g.querySelector('.condition-items-list').style.display = 'none';
+                        g.querySelector('.condition-group-header').classList.add('collapsed');
+                    });
+
+                    if (group.classList.contains('collapsed-group')) {
+                        group.classList.remove('collapsed-group');
+                        itemsList.style.display = '';
+                        header.classList.remove('collapsed');
+                        expandedGroupKey = key;
+                    } else {
+                        expandedGroupKey = null;
+                    }
+                });
+                group.appendChild(header);
+
+                const itemsWrap = document.createElement('div');
+                itemsWrap.className = 'condition-items-list';
+                itemsWrap.style.display = 'none';
+
+                const items = envConditions[key] || [];
+                items.forEach((value, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'condition-item';
+                    item.draggable = true;
+                    item.dataset.key = key;
+                    item.dataset.index = index;
+                    item.innerHTML = `
+                        <svg class="drag-handle" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
+                        <input type="text" data-key="${key}" data-index="${index}" value="${value}">
+                        <button class="btn-delete-condition" data-key="${key}" data-index="${index}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                    `;
+                    item.addEventListener('dragstart', handleDragStart);
+                    item.addEventListener('dragend', handleDragEnd);
+                    group.addEventListener('dragover', handleGroupDragOver);
+                    group.addEventListener('dragleave', handleGroupDragLeave);
+                    group.addEventListener('drop', handleGroupDrop);
+                    itemsWrap.appendChild(item);
+                });
+
+                if (expandedGroupKey === key) {
+                    group.classList.remove('collapsed-group');
+                    itemsWrap.style.display = '';
+                    header.classList.remove('collapsed');
+                } else {
+                    group.classList.add('collapsed-group');
+                    itemsWrap.style.display = 'none';
+                }
+                group.appendChild(itemsWrap);
+                conditionsContainer.appendChild(group);
+            });
+
+            conditionsContainer.querySelectorAll('.btn-delete-condition').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const key = btn.dataset.key;
+                    const index = parseInt(btn.dataset.index);
+                    deleteConditionValue = envConditions[key][index];
+                    deleteConditionIndex = { key, index };
+                    document.getElementById('deleteConfirmMessage').textContent = `Удалить условие "${deleteConditionValue}"?`;
+                    document.getElementById('deleteConfirmModal').classList.add('show');
+                });
+            });
+        }
+
+        let dragSourceKey = null;
+        let dragSourceIndex = null;
+
+        function handleDragStart(e) {
+            const item = e.currentTarget;
+            dragSourceKey = item.dataset.key;
+            dragSourceIndex = parseInt(item.dataset.index);
+            item.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', '');
+        }
+
+        function handleDragEnd(e) {
+            e.currentTarget.classList.remove('dragging');
+            hideDropIndicator();
+            dragSourceKey = null;
+            dragSourceIndex = null;
+        }
+
+        let dropIndicatorEl = null;
+
+        function handleGroupDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const group = e.currentTarget;
+            if (group.dataset.key !== dragSourceKey) return;
+            const items = [...envConditions[dragSourceKey]];
+            items.splice(dragSourceIndex, 1);
+            const groupItems = group.querySelectorAll('.condition-item:not(.dragging)');
+            let insertIndex = items.length;
+            for (let i = 0; i < groupItems.length; i++) {
+                const rect = groupItems[i].getBoundingClientRect();
+                if (e.clientY < rect.top + rect.height / 2) { insertIndex = i; break; }
+            }
+            ensureDropIndicator(group, groupItems);
+            positionDropIndicator(group, groupItems, insertIndex);
+        }
+
+        function handleGroupDragLeave(e) {
+            const group = e.currentTarget;
+            if (!group.contains(e.relatedTarget)) hideDropIndicator();
+        }
+
+        function ensureDropIndicator(group, groupItems) {
+            if (dropIndicatorEl) return;
+            dropIndicatorEl = document.createElement('div');
+            dropIndicatorEl.style.cssText = 'height:2px;background:#0f172a;border-radius:1px;margin:-1px 0;opacity:0.4;pointer-events:none;transition:opacity 0.1s;';
+            const header = group.querySelector('.condition-group-header');
+            if (header) {
+                const itemsList = group.querySelector('.condition-items-list');
+                if (itemsList && itemsList.children.length > 0) {
+                    itemsList.insertBefore(dropIndicatorEl, itemsList.firstChild);
+                } else {
+                    header.after(dropIndicatorEl);
+                }
+            } else {
+                group.appendChild(dropIndicatorEl);
+            }
+        }
+
+        function positionDropIndicator(group, groupItems, insertIndex) {
+            if (!dropIndicatorEl) return;
+            dropIndicatorEl.style.opacity = '1';
+            const itemsList = group.querySelector('.condition-items-list');
+            if (insertIndex >= groupItems.length) {
+                const lastItem = groupItems[groupItems.length - 1];
+                if (lastItem) lastItem.after(dropIndicatorEl); else {
+                    const header = group.querySelector('.condition-group-header');
+                    if (header) header.after(dropIndicatorEl);
+                }
+            } else {
+                const targetItem = groupItems[insertIndex];
+                if (targetItem) targetItem.before(dropIndicatorEl);
+            }
+        }
+
+        function hideDropIndicator() {
+            if (dropIndicatorEl && dropIndicatorEl.parentNode) dropIndicatorEl.parentNode.removeChild(dropIndicatorEl);
+            dropIndicatorEl = null;
+        }
+
+        function handleGroupDrop(e) {
+            e.preventDefault();
+            const targetGroup = e.currentTarget;
+            if (dragSourceKey === null || dragSourceIndex === null) return;
+            if (targetGroup.dataset.key !== dragSourceKey) return;
+            const items = [...envConditions[dragSourceKey]];
+            const [movedItem] = items.splice(dragSourceIndex, 1);
+            envConditions[dragSourceKey] = items;
+            const groupItems = targetGroup.querySelectorAll('.condition-item:not(.dragging)');
+            let insertIndex = envConditions[dragSourceKey].length;
+            for (let i = 0; i < groupItems.length; i++) {
+                const rect = groupItems[i].getBoundingClientRect();
+                if (e.clientY < rect.top + rect.height / 2) { insertIndex = i; break; }
+            }
+            envConditions[dragSourceKey].splice(insertIndex, 0, movedItem);
+            hideDropIndicator();
+            renderConditions();
+        }
+
+        async function loadConditions() {
+            try {
+                const res = await fetch('/api/env');
+                if (!res.ok) throw new Error('Ошибка загрузки');
+                const data = await res.json();
+                envConditions = data.conditions || {};
+                renderConditions();
+            } catch (err) { showToast('Ошибка загрузки условий', 'error'); }
+        }
+
+        document.getElementById('saveConditionsBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('saveConditionsBtn');
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<div class="spinner"></div> Сохранение...';
+                const res = await fetch('/api/env', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conditions: envConditions }) });
+                if (res.ok) showToast('Условия сохранены', 'success');
+                else throw new Error('Ошибка сервера');
+            } catch (err) { showToast('Не удалось сохранить условия', 'error'); }
+            finally { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg> Сохранить условия'; }
+        });
+
+        loadConditions();
+
+        let deleteConditionValue = '';
+        let deleteConditionIndex = null;
+        const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+        const deleteModalCancel = document.getElementById('deleteModalCancel');
+        const deleteModalConfirm = document.getElementById('deleteModalConfirm');
+
+        deleteModalCancel.addEventListener('click', () => { deleteConfirmModal.classList.remove('show'); });
+        deleteConfirmModal.addEventListener('click', (e) => { if (e.target === deleteConfirmModal) deleteConfirmModal.classList.remove('show'); });
+
+        deleteModalConfirm.addEventListener('click', async () => {
+            if (deleteConditionIndex) {
+                const key = deleteConditionIndex.key;
+                expandedGroupKey = key;
+                const index = deleteConditionIndex.index;
+                envConditions[key].splice(index, 1);
+                renderConditions();
+                showToast('Условие удалено', 'info');
+                try { await fetch('/api/env', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conditions: envConditions }) }); }
+                catch (err) { showToast('Ошибка при сохранении', 'error'); }
+            }
+            deleteConfirmModal.classList.remove('show');
+        });
+    </script>
+</body>
+</html>
